@@ -41,8 +41,10 @@ namespace CyberSource.Clients
         /// </summary>
         public const int DEFAULT_TIMEOUT = 130;
 
-        private const string TEST_URL = "https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor";
+        //private const string TEST_URL = "https://ics2wstest.ic3.com/commerce/1.x/transactionProcessor";
         private const string PROD_URL = "https://ics2ws.ic3.com/commerce/1.x/transactionProcessor";
+        //private const string TEST_URL = "https://sl73steapd031.nta.visa.com:8443/commerce/1.x/transactionProcessor"; // STAGE
+        private const string TEST_URL = "https://cybstl-signoff-r2-nta.visa.com/commerce/1.x/transactionProcessor/"; // LTM PROD
         private const string PROD_HOST = "ics2ws.ic3.com";
         
         private const string P12_EXTENSION = ".p12";

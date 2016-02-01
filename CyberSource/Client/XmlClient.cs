@@ -90,7 +90,25 @@ namespace CyberSource.Clients
 
                 //Get the X509 cert and sign the SOAP Body    
                 string keyFilePath = Path.Combine(config.KeysDirectory, config.EffectiveKeyFilename);
-                X509Certificate2 cert = new X509Certificate2(keyFilePath, config.EffectivePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+
+                // CHANGES TO SUPPORT SHA256 Certificate (Dated: 29 Jan 2016)
+                // Have changed the way certificate are fetched from the .p12 file
+                // Iterating over the certificates now and considering the one with matching Merchant ID
+
+                X509Certificate2 cert = null;
+
+                X509Certificate2Collection collection = new X509Certificate2Collection();
+                collection.Import(keyFilePath, config.EffectivePassword, X509KeyStorageFlags.Exportable | X509KeyStorageFlags.PersistKeySet);
+
+                foreach (X509Certificate2 iterateCert in collection)
+                {
+                    if (iterateCert.Subject.Contains(config.MerchantID))
+                    {
+                        cert = iterateCert;
+                        break;
+                    }
+                }
+
                 SignDocument(cert, doc);
 
                 // convert the document into an array of bytes using the
@@ -224,6 +242,18 @@ namespace CyberSource.Clients
             
             RSACryptoServiceProvider rsaKey = (RSACryptoServiceProvider)cert.PrivateKey;
             signedXML.SigningKey = rsaKey;
+
+            // CHANGES TO SUPPORT SHA256 Certificate (Dated: 29 Jan 2016)
+            // Changes so that client signs the request with SHA256
+
+            var cn14Transform = new XmlDsigExcC14NTransform();
+            string referenceDigestMethod = "http://www.w3.org/2001/04/xmlenc#sha256";
+            
+            reference.AddTransform(cn14Transform);
+            reference.DigestMethod = referenceDigestMethod;
+            signedXML.AddReference(reference);
+
+            KeyedHashAlgorithm kha = KeyedHashAlgorithm.Create("RSA-SHA256");
             
             // Compute the signature.
             signedXML.ComputeSignature();
